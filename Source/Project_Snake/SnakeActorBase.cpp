@@ -3,6 +3,7 @@
 
 #include "SnakeActorBase.h"
 #include "SnakeElementBase.h"
+#include "Interactable.h"
 
 // Sets default values
 ASnakeActorBase::ASnakeActorBase()
@@ -20,7 +21,7 @@ void ASnakeActorBase::BeginPlay()
 {
 	Super::BeginPlay();
 	SetActorTickInterval(MovementSpeed);
-	AddSnakeElement(4);
+	AddSnakeElement(5);
 	
 }
 
@@ -34,11 +35,12 @@ void ASnakeActorBase::Tick(float DeltaTime)
 
 void ASnakeActorBase::AddSnakeElement(int ElementsNum)
 {
-	for (int i = 0; i < ElementsNum; i++)
+	for (int i = 0; i < ElementsNum; ++i)
 	{
 		FVector NewLocation(SnakeElements.Num() * ElementSize, 0, 0);
 		FTransform NewTransform(NewLocation);
 		ASnakeElementBase* NewSnakeElem = GetWorld()->SpawnActor<ASnakeElementBase>(SnakeElementClass, NewTransform);
+		NewSnakeElem->SnakeOwner = this;
 		int32 ElemIndex = SnakeElements.Add(NewSnakeElem);
 
 		if (ElemIndex == 0)
@@ -52,25 +54,25 @@ void ASnakeActorBase::AddSnakeElement(int ElementsNum)
 void ASnakeActorBase::Move()
 {
 	FVector MovementVector(ForceInitToZero);
-	MovementSpeed = ElementSize;
-
+	
 	switch (LastMoveDirection)
 	{
 		case EMovementDirection::UP:
-			MovementVector.X += MovementSpeed;
+			MovementVector.X += ElementSize;
 			break;
 		case EMovementDirection::DOWN:
-			MovementVector.X -= MovementSpeed;
+			MovementVector.X -= ElementSize;
 			break;
 		case EMovementDirection::LEFT:
-			MovementVector.Y += MovementSpeed;
+			MovementVector.Y += ElementSize;
 			break;
 		case EMovementDirection::RIGHT:
-			MovementVector.Y -= MovementSpeed;
+			MovementVector.Y -= ElementSize;
 			break;
 	}
 
 	//AddActorWorldOffset(MovementVector);
+	SnakeElements[0]->ToggleCollision();
 
 	for (int i = SnakeElements.Num() - 1; i > 0; i--)
 	{
@@ -82,5 +84,21 @@ void ASnakeActorBase::Move()
 	}
 
 	SnakeElements[0]->AddActorWorldOffset(MovementVector);
+	SnakeElements[0]->ToggleCollision();
+}
+
+void ASnakeActorBase::SnakeElementOverlap(ASnakeElementBase* OverlappedElement, AActor* Other)
+{
+	if (IsValid(OverlappedElement))
+	{
+		int32 ElemIndex;
+		SnakeElements.Find(OverlappedElement, ElemIndex);
+		bool bIsFirst = ElemIndex == 0;
+		IInteractable* InteractableInterface = Cast<IInteractable>(Other);
+		if (InteractableInterface)
+		{
+			InteractableInterface->Interact(this, bIsFirst);
+		}
+	}
 }
 
