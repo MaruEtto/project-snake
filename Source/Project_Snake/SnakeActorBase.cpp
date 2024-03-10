@@ -37,6 +37,7 @@ void ASnakeActorBase::AddSnakeElement(int ElementsNum)
 {
 	for (int i = 0; i < ElementsNum; ++i)
 	{
+				
 		FVector NewLocation(SnakeElements.Num() * ElementSize, 0, 0);
 		FTransform NewTransform(NewLocation);
 		ASnakeElementBase* NewSnakeElem = GetWorld()->SpawnActor<ASnakeElementBase>(SnakeElementClass, NewTransform);
@@ -49,6 +50,22 @@ void ASnakeActorBase::AddSnakeElement(int ElementsNum)
 		}
 	}
 	
+}
+
+void ASnakeActorBase::AddLastSnakeElement(int ElementsNum) // добавляет новый элемент змейки по координатам последнего
+{
+	for (int i = 0; i < ElementsNum; ++i)
+	{
+		int LastSnakeElementIndex = SnakeElements.Num() - 1; //получает индекс последнего элемента змейки
+		auto LastSnakeElement = SnakeElements[LastSnakeElementIndex]; //получает последний элемент змейки
+
+		FVector NewLocation = LastSnakeElement->GetActorLocation(); //получает координаты последнего элемента змейки
+		FTransform NewTransform(NewLocation);
+		ASnakeElementBase* NewSnakeElem = GetWorld()->SpawnActor<ASnakeElementBase>(SnakeElementClass, NewTransform); //создает новый элемент змейки в координатах последнего
+		NewSnakeElem->SnakeOwner = this;
+		int32 ElemIndex = SnakeElements.Add(NewSnakeElem);
+
+	}
 }
 
 void ASnakeActorBase::Move()

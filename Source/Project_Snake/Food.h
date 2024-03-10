@@ -7,7 +7,6 @@
 #include "Interactable.h"
 #include "Food.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMyDelegate);
 
 UCLASS()
 class PROJECT_SNAKE_API AFood : public AActor, public IInteractable
@@ -21,7 +20,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	virtual void Destroyed() override;
 
 public:	
 	// Called every frame
@@ -29,5 +27,4 @@ public:
 
 	virtual void Interact(AActor* Interactor, bool bIsHead) override;
 
-	FMyDelegate BonusActivated;
 };
